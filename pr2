@@ -1,0 +1,54 @@
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR NOT NULL,
+    role VARCHAR NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    record_ts DATE DEFAULT CURRENT_DATE
+);
+
+
+CREATE TABLE follows (
+    following_user_id INTEGER REFERENCES users(id),
+    followed_user_id INTEGER REFERENCES users(id),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    record_ts DATE DEFAULT CURRENT_DATE
+);
+
+
+CREATE TABLE posts (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR NOT NULL,
+    body TEXT NOT NULL,
+    user_id INTEGER REFERENCES users(id),
+    status VARCHAR NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    record_ts DATE DEFAULT CURRENT_DATE
+);
+
+
+ALTER TABLE users ADD CONSTRAINT check_created_at CHECK (created_at > '2000-01-01'::TIMESTAMPTZ);
+ALTER TABLE posts ADD CONSTRAINT check_status_value CHECK (status = 'specific_value');
+ALTER TABLE posts ADD CONSTRAINT check_non_negative_value CHECK (value_column >= 0);
+
+
+INSERT INTO users (username, role) VALUES
+    ('user1', 'role1'),
+    ('user2', 'role2');
+
+INSERT INTO follows (following_user_id, followed_user_id) VALUES
+    (1, 2),
+    (2, 1);
+
+INSERT INTO posts (title, body, user_id, status) VALUES
+    ('Title 1', 'Body 1', 1, 'specific_value'),
+    ('Title 2', 'Body 2', 2, 'specific_value');
+
+
+ALTER TABLE users ALTER COLUMN record_ts SET DEFAULT CURRENT_DATE;
+UPDATE users SET record_ts = CURRENT_DATE WHERE record_ts IS NULL;
+
+ALTER TABLE follows ALTER COLUMN record_ts SET DEFAULT CURRENT_DATE;
+UPDATE follows SET record_ts = CURRENT_DATE WHERE record_ts IS NULL;
+
+ALTER TABLE posts ALTER COLUMN record_ts SET DEFAULT CURRENT_DATE;
+UPDATE posts SET record_ts = CURRENT_DATE WHERE record_ts IS NULL;
